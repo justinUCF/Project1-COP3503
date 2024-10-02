@@ -14,31 +14,108 @@ public class TwoFourTree {
         TwoFourTreeItem centerRightChild = null;
 
         public boolean isTwoNode() {
-            return false;
+            return values == 1;
         }
 
         public boolean isThreeNode() {
-            return false;
+            return values == 2;
         }
 
         public boolean isFourNode() {
-            return false;
+            return values == 3;
         }
 
         public boolean isRoot() {
-            return false;
+            return parent == null;
         }
 
         public TwoFourTreeItem(int value1) {
-
+            values = 1;
+            this.value1 = value1;
         }
 
         public TwoFourTreeItem(int value1, int value2) {
-            
+            values = 2;
+            this.value1 = value1;
+            this.value2 = value2;
         }
 
         public TwoFourTreeItem(int value1, int value2, int value3) {
-            
+            values = 3;
+            this.value1 = value1;
+            this.value2 = value2;
+            this.value3 = value3;
+        }
+
+        public void organizeValues(){
+            //Checks Node and organizes the values from least to greatest
+            if(isTwoNode()){
+                value1 = value1;
+            }
+            else if(isThreeNode()){
+                int tempMin = min(value1, value2);
+                int tempMax = max(value1, value2);
+                
+                value1 = tempMin;
+                value2 = tempMax;
+            }
+            else if(isFourNode()){
+                int tempMin = min(value1, min(value2, value3));
+                int tempMax = max(value1, max(value2, value3));
+                int tempMid = value1 + value2 + value3 - tempMin - tempMax;
+
+                value1 = tempMin;
+                value2 = tempMid;
+                value3 = tempMax;
+            }
+            else{
+                System.err.println("\nOrganizeValues() Failed");
+            }
+        }
+
+        public boolean hasValue(int value){
+            if(value1 == value || value2 == value || value3 == value){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+
+        public TwoFourTreeItem findSubRoot(int value){
+            //Returns the node that may contain the given value
+            if(hasValue(value)){
+                return this;
+            }
+            else if(isLeaf){
+                return null;
+            }
+            else{
+                if(this.isTwoNode()){
+                    if(value < this.value1)
+                        return this.leftChild;
+                    else
+                        return this.rightChild;
+                }
+                else if(this.isThreeNode()){
+                    if(value < this.value1)
+                        return this.leftChild;
+                    else if(value < this.value2)
+                        return this.center;
+                    else
+                        return this.rightChild;
+                }
+                else{
+                    if(value < this.value1)
+                        return this.leftChild;
+                    else if(value < this.value2)
+                        return this.centerLeftChild;
+                    else if(value < this.value3)
+                        return this.centerRightChild;
+                    else
+                        return this.rightChild;
+                }
+            }
         }
 
         private void printIndents(int indent) {
@@ -68,10 +145,25 @@ public class TwoFourTree {
     TwoFourTreeItem root = null;
 
     public boolean addValue(int value) {
+        if(root == null){
+            root = new TwoFourTreeItem(value);
+        }
+        else if(!root.hasValue()){
+            
+        }
         return false;
     }
 
     public boolean hasValue(int value) {
+        TwoFourTreeItem temp = root;
+        while(temp != null){
+            if(temp.hasValue(value)){
+                return true;
+            }
+            else{
+                temp = temp.findSubRoot(value);
+            }
+        }
         return false;
     }
 
