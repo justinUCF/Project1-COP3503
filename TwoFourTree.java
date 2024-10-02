@@ -118,6 +118,71 @@ public class TwoFourTree {
             }
         }
 
+        public TwoFourTreeItem splitNode(){
+            if(this.isFourNode()){
+                TwoFourTreeItem leftNode = new TwoFourTreeItem(value1);
+                leftNode.leftChild = this.leftChild;
+                leftNode.rightChild = this.centerLeftChild;
+                leftNode.parent = this.parent;
+                leftNode.isLeaf = this.isLeaf;
+
+                TwoFourTreeItem rightNode = new TwoFourTreeItem(value3);
+                rightNode.leftChild = this.centerRightChild;
+                rightNode.rightChild = this.rightNode;
+                rightNode.parent = this.parent;
+                rightNode.isLeaf = this.isLeaf;
+
+                if(isRoot()){
+                    TwoFourTreeItem rootNode = new TwoFourTreeItem(value2);
+                    rootNode.leftChild = leftNode;
+                    rootNode.rightChild = rightNode;
+                    rootNode.isLeaf = false
+                    leftNode.parent = rootNode;
+                    rightNode.parent = rootNode;
+                    return rootNode;
+                }
+                else{
+                    if(parent.isTwoNode()){
+                        parent.value2 = this.value2;
+                        parent.values = 2;
+                        parent.organizeValues()
+                        if(parent.value1 == this.value2){
+                            parent.leftChild = leftNode;
+                            parent.centerChild = rightNode;
+                        }
+                        else{
+                            parent.centerChild = leftNode;
+                            parent.rightChild = rightNode; 
+                        }
+                    }
+                    else if(parent.isThreeNode()){
+                        parent.value3 = this.value2;
+                        parent.values = 3;
+                        parent.organizeValues();
+                        if(parent.value1 == this.value2){
+                            parent.leftChild = leftNode;
+                            parent.centerLeftChild = rightNode;
+                            parent.centerRightChild = parent.center;
+                            parent.center = null;
+                        }
+                        else if(parent.value2 = this.value2){
+                            parent.centerLeftChild = leftNode;
+                            parent.centerRightChild = rightNode;
+                            parent.center = null;
+                        }
+                        else{
+                            parent.centerLeftChild = parent.center;
+                            parent.center = null;
+                            parent.centerRightChild = leftNode;
+                            parent.rightChild = rightNode;
+                        }
+                    }
+                    return parent;
+                }
+
+            }
+        }
+
         private void printIndents(int indent) {
             for(int i = 0; i < indent; i++) System.out.printf("  ");
         }
@@ -148,8 +213,20 @@ public class TwoFourTree {
         if(root == null){
             root = new TwoFourTreeItem(value);
         }
-        else if(!root.hasValue()){
-            
+        else if(!this.hasValue()){
+            TwoFourTreeItem temp = root;
+            while(!temp.isLeaf){
+                temp = temp.findSubRoot(value);
+                if(temp.isFourNode()){
+                    if()
+                    temp = temp.splitNode();
+                }
+            }
+            if(temp.isRoot() && temp.isFourNode()){
+                root = temp.splitNode;
+                temp = root;
+            }
+
         }
         return false;
     }
@@ -157,13 +234,14 @@ public class TwoFourTree {
     public boolean hasValue(int value) {
         TwoFourTreeItem temp = root;
         while(temp != null){
-            if(temp.hasValue(value)){
+            //If value is in node then return True
+            if(temp.hasValue(value))
                 return true;
-            }
-            else{
+            //Else find possible subroot and repeat check
+            else
                 temp = temp.findSubRoot(value);
-            }
         }
+        //If temp == null then value does not exist in tree
         return false;
     }
 
