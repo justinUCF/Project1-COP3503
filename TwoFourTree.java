@@ -49,19 +49,16 @@ public class TwoFourTree {
 
         public void organizeValues(){
             //Checks Node and organizes the values from least to greatest
-            if(isTwoNode()){
-                value1 = value1;
-            }
-            else if(isThreeNode()){
-                int tempMin = min(value1, value2);
-                int tempMax = max(value1, value2);
+            if(isThreeNode()){
+                int tempMin = Math.min(value1, value2);
+                int tempMax = Math.max(value1, value2);
                 
                 value1 = tempMin;
                 value2 = tempMax;
             }
             else if(isFourNode()){
-                int tempMin = min(value1, min(value2, value3));
-                int tempMax = max(value1, max(value2, value3));
+                int tempMin = Math.min(value1, Math.min(value2, value3));
+                int tempMax = Math.max(value1, Math.max(value2, value3));
                 int tempMid = value1 + value2 + value3 - tempMin - tempMax;
 
                 value1 = tempMin;
@@ -101,7 +98,7 @@ public class TwoFourTree {
                     if(value < this.value1)
                         return this.leftChild;
                     else if(value < this.value2)
-                        return this.center;
+                        return this.centerChild;
                     else
                         return this.rightChild;
                 }
@@ -119,68 +116,109 @@ public class TwoFourTree {
         }
 
         public TwoFourTreeItem splitNode(){
-            if(this.isFourNode()){
-                TwoFourTreeItem leftNode = new TwoFourTreeItem(value1);
+            if(this.isFourNode() == true){
+                //Create new nodes for split
+                TwoFourTreeItem leftNode = new TwoFourTreeItem(this.value1);
+                TwoFourTreeItem rightNode = new TwoFourTreeItem(this.value3);
+                //keep isLeaf value
+                leftNode.isLeaf = this.isLeaf;
+                rightNode.isLeaf = this.isLeaf;
+                //Assign children to new nodes
                 leftNode.leftChild = this.leftChild;
                 leftNode.rightChild = this.centerLeftChild;
-                leftNode.parent = this.parent;
-                leftNode.isLeaf = this.isLeaf;
-
-                TwoFourTreeItem rightNode = new TwoFourTreeItem(value3);
                 rightNode.leftChild = this.centerRightChild;
-                rightNode.rightChild = this.rightNode;
-                rightNode.parent = this.parent;
-                rightNode.isLeaf = this.isLeaf;
-
-                if(isRoot()){
-                    TwoFourTreeItem rootNode = new TwoFourTreeItem(value2);
-                    rootNode.leftChild = leftNode;
-                    rootNode.rightChild = rightNode;
-                    rootNode.isLeaf = false
-                    leftNode.parent = rootNode;
-                    rightNode.parent = rootNode;
-                    return rootNode;
+                rightNode.rightChild = this.rightChild;
+                //If this has non null children then reassign parents
+                if(this.isLeaf == false){
+                    this.leftChild.parent = leftNode;
+                    this.centerLeftChild.parent = leftNode;
+                    this.centerRightChild.parent = rightNode;
+                    this.rightChild.parent = rightNode;
+                }
+                //Execute Split if node is the root
+                if(this.isRoot() == true){
+                    TwoFourTreeItem newRoot = new TwoFourTreeItem(value2);
+                    newRoot.leftChild = leftNode;
+                    newRoot.rightChild = rightNode;
+                    newRoot.isLeaf = false;
+                    newRoot.leftChild.parent = newRoot;
+                    newRoot.rightChild.parent = newRoot;
+                    return newRoot;
                 }
                 else{
-                    if(parent.isTwoNode()){
-                        parent.value2 = this.value2;
-                        parent.values = 2;
-                        parent.organizeValues()
-                        if(parent.value1 == this.value2){
-                            parent.leftChild = leftNode;
-                            parent.centerChild = rightNode;
+                    if(this.parent.isFourNode() == false){
+                        if(this.parent.isTwoNode() == true){
+                            this.parent.value2 = this.value2;
+                            this.parent.values = 2;
+                            this.parent.organizeValues();
+                            if(this.parent.value1 == this.value2){
+                                //Split node is left node of parent
+                                this.parent.leftChild = leftNode;
+                                this.parent.centerChild = rightNode;
+                            }
+                            else{
+                                //Split node is right node of parent
+                                this.parent.centerChild = leftNode;
+                                this.parent.rightChild = rightNode;
+                            }
+                            //Ensure each child has is assigned to parent
+                            this.parent.leftChild.parent = this.parent;
+                            this.parent.centerChild.parent = this.parent;
+                            this.parent.rightChild.parent = this.parent;
                         }
-                        else{
-                            parent.centerChild = leftNode;
-                            parent.rightChild = rightNode; 
+                        else if(this.parent.isThreeNode() == true){
+                            this.parent.value3 = this.value2;
+                            this.parent.values = 3;
+                            this.parent.organizeValues();
+                            if(this.parent.value1 == this.value2){
+                                //Split node is left child of parent
+                                this.parent.leftChild = leftNode;
+                                this.parent.centerLeftChild = rightNode;
+                                this.parent.centerRightChild = this.parent.centerChild;
+                                this.parent.centerChild = null;
+                            }
+                            else if(this.parent.value2 == this.value2){
+                                //Split node is center child of parent
+                                this.parent.centerLeftChild = leftNode;
+                                this.parent.centerRightChild = rightNode;
+                                this.centerChild = null;
+                            }
+                            else{
+                                //Split node is right child of parent
+                                this.parent.centerLeftChild = this.parent.centerChild;
+                                this.parent.centerChild = null;
+                                this.parent.centerRightChild = leftNode;
+                                this.parent.rightChild = rightNode;
+                            }
+                            //Ensure each child has is assigned to parent
+                            this.parent.leftChild.parent = this.parent;
+                            this.parent.centerLeftChild.parent = this.parent;
+                            this.parent.centerRightChild.parent = this.parent;
+                            this.parent.rightChild.parent = this.parent;
                         }
                     }
-                    else if(parent.isThreeNode()){
-                        parent.value3 = this.value2;
-                        parent.values = 3;
-                        parent.organizeValues();
-                        if(parent.value1 == this.value2){
-                            parent.leftChild = leftNode;
-                            parent.centerLeftChild = rightNode;
-                            parent.centerRightChild = parent.center;
-                            parent.center = null;
-                        }
-                        else if(parent.value2 = this.value2){
-                            parent.centerLeftChild = leftNode;
-                            parent.centerRightChild = rightNode;
-                            parent.center = null;
-                        }
-                        else{
-                            parent.centerLeftChild = parent.center;
-                            parent.center = null;
-                            parent.centerRightChild = leftNode;
-                            parent.rightChild = rightNode;
-                        }
-                    }
-                    return parent;
+                    return this.parent;
                 }
-
             }
+            else{
+                System.out.println("Can not split non 4 nodes");
+                return this;
+            }
+        }
+
+        public void addValue(int value){
+            if(isTwoNode()){
+                this.value2 = value;
+                this.values = 2;
+            }
+            else if(isThreeNode()){
+                this.value3 = value;
+                this.values = 3;
+            }
+            else{
+                System.out.println("Node is full");
+            }
+            this.organizeValues();
         }
 
         private void printIndents(int indent) {
@@ -212,23 +250,40 @@ public class TwoFourTree {
     public boolean addValue(int value) {
         if(root == null){
             root = new TwoFourTreeItem(value);
+            return true;
         }
-        else if(!this.hasValue()){
+        else if(root.isLeaf){
+            if(root.isFourNode()){
+                root = root.splitNode();
+                TwoFourTreeItem temp = root.findSubRoot(value);
+                temp.addValue(value); //inserts value into node if node is leaf
+            }
+            else{
+                root.addValue(value);
+            }
+            return true;
+        }
+        else{
             TwoFourTreeItem temp = root;
             while(!temp.isLeaf){
-                temp = temp.findSubRoot(value);
                 if(temp.isFourNode()){
-                    if()
-                    temp = temp.splitNode();
+                    if(temp.isRoot()){
+                        temp = temp.splitNode();
+                        root = temp;
+                    }
+                    else{
+                        temp = temp.splitNode();
+                    }
                 }
+                temp = temp.findSubRoot(value);
             }
-            if(temp.isRoot() && temp.isFourNode()){
-                root = temp.splitNode;
-                temp = root;
+            if(temp.isFourNode()){
+                temp = temp.splitNode();
+                temp = temp.findSubRoot(value);
             }
-
+            temp.addValue(value);
+            return true;
         }
-        return false;
     }
 
     public boolean hasValue(int value) {
