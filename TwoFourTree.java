@@ -156,6 +156,7 @@ public class TwoFourTree {
             if(this.rightChild != null) this.rightChild.parent = this;
         }
 
+        //Sibling Logic
         public TwoFourTreeItem getLeftSibling(){
             if(this.parent.leftChild == this) return null;
             if(this.parent.centerLeftChild == this) return this.parent.leftChild;
@@ -168,7 +169,6 @@ public class TwoFourTree {
             }
             return null;
         }
-
         public TwoFourTreeItem getRightSibling(){
             if(this.parent.leftChild == this){
                 if(this.parent.isTwoNode()) return this.parent.rightChild;
@@ -259,6 +259,7 @@ public class TwoFourTree {
             return this;
         }
 
+        //Removes face value and voids related child
         public int removeLeftFace(){
             int retval = 0;
             if(this.isThreeNode()){
@@ -283,7 +284,6 @@ public class TwoFourTree {
             return retval;
 
         }
-
         public int removeRightFace(){
             int retval = 0;
             if(this.isThreeNode()){
@@ -305,6 +305,7 @@ public class TwoFourTree {
             return retval;
         }
 
+        //Rotate logic
         public TwoFourTreeItem rotateRight(TwoFourTreeItem rightSibling){
             //Rotating with right sibling
             this.centerChild = this.rightChild;
@@ -333,7 +334,6 @@ public class TwoFourTree {
             rightSibling.assignChildrenParent();
             return this;
         }
-
         public TwoFourTreeItem rotateLeft(TwoFourTreeItem leftSibling){
             this.centerChild = this.leftChild;
             this.leftChild = leftSibling.rightChild;
@@ -372,101 +372,161 @@ public class TwoFourTree {
             return this;
         }
 
-        public TwoFourTreeItem merge(){
-            //case 1
-            if((this.parent.leftChild == this || this.parent.centerChild == this) && this.parent.isThreeNode()){
-                TwoFourTreeItem newFourNode = new TwoFourTreeItem(this.parent.leftChild.value1, this.parent.value1, this.parent.centerChild.value1);
-                newFourNode.leftChild = this.parent.leftChild.leftChild;
-                newFourNode.centerLeftChild = this.parent.leftChild.rightChild;
-                newFourNode.centerRightChild = this.parent.centerChild.leftChild;
-                newFourNode.rightChild = this.parent.centerChild.rightChild;
-
-                this.parent.leftChild = newFourNode;
-                this.parent.centerChild = null;
-                this.parent.value1 = this.parent.value2;
-                this.parent.value2 = 0;
-                this.parent.values = 1;
-            }
-            //case 2
-            if(this.parent.rightChild == this && this.parent.isThreeNode()){
-                TwoFourTreeItem newFourNode = new TwoFourTreeItem(this.parent.centerChild.value1, this.parent.value2, this.parent.rightChild.value1);
-                newFourNode.leftChild = this.parent.centerChild.leftChild;
-                newFourNode.centerLeftChild = this.parent.centerChild.rightChild;
-                newFourNode.centerRightChild = this.parent.rightChild.leftChild;
-                newFourNode.rightChild = this.parent.rightChild.rightChild;
-
-                this.parent.rightChild = newFourNode;
-                this.parent.centerChild = null;
-                this.parent.value2 = 0;
-                this.parent.values = 1;
-            }
-            //case 3
-            if((this.parent.leftChild == this || this.parent.centerLeftChild == this) && this.parent.isFourNode()){
-                TwoFourTreeItem newFourNode = new TwoFourTreeItem(this.parent.leftChild.value1, this.parent.value1, this.parent.centerLeftChild.value1);
-                newFourNode.leftChild = this.parent.leftChild.leftChild;
-                newFourNode.centerLeftChild = this.parent.leftChild.rightChild;
-                newFourNode.centerRightChild = this.parent.centerLeftChild.leftChild;
-                newFourNode.rightChild = this.parent.centerLeftChild.rightChild;
-
-                this.parent.leftChild = newFourNode;
-                this.parent.centerChild = this.parent.centerRightChild;
-                this.parent.centerLeftChild = null;
-                this.parent.centerRightChild = null;
-                this.parent.value1 = this.parent.value2;
-                this.parent.value2 = this.parent.value3;
-                this.parent.value3 = 0;
-                this.parent.values = 2;
-            }
-            //case 4
-            if((this.parent.rightChild == this || this.parent.centerRightChild == this) && this.parent.isFourNode()){
-                TwoFourTreeItem newFourNode = new TwoFourTreeItem(this.parent.centerRightChild.value1, this.parent.value3, this.parent.rightChild.value1);
-                newFourNode.leftChild = this.parent.centerRightChild.leftChild;
-                newFourNode.centerLeftChild = this.parent.centerRightChild.rightChild;
-                newFourNode.centerRightChild = this.parent.rightChild.leftChild;
-                newFourNode.rightChild = this.parent.rightChild.rightChild;
-
-                this.parent.rightChild = newFourNode;
-                this.centerChild = this.parent.centerLeftChild;
-                this.parent.centerLeftChild = null;
-                this.parent.centerRightChild = null;
-                this.parent.value3 = 0;
-                this.parent.values = 2;
-            }
-            newFourNode.parent = this.parent;
-            newFourNode.assignChildrenParent();
-            newFourNode.assignIsLeaf();
-            return this.parent;
+        public TwoFourTreeItem mergeCase1(int v1, int v2, int v3){
+            //Parent is fourNode, this is leftchild or centerleftchild, sibling is leftchild or centerleftchild
+            TwoFourTreeItem newNode = new TwoFourTreeItem(v1, v2, v3);
+            newNode.leftChild = this.parent.leftChild.leftChild;
+            newNode.centerLeftChild = this.parent.leftChild.rightChild;
+            newNode.centerRightChild = this.parent.centerLeftChild.leftChild;
+            newNode.rightChild = this.parent.centerLeftChild.rightChild;
+            newNode.assignChildrenParent();
+            newNode.assignIsLeaf();
+            this.parent.removeLeftFace();
+            this.parent.leftChild = newNode;
+            this.parent.assignChildrenParent();
+            return newNode;
         }
-
+        public TwoFourTreeItem mergeCase2(int v1, int v2, int v3){
+            //Parent is fourNode, this is centerleftchild or centerrightchild, sibling is centerleftchild or centerrightchild
+            TwoFourTreeItem newNode = new TwoFourTreeItem(v1, v2, v3);
+            newNode.leftChild = this.parent.centerLeftChild.leftChild;
+            newNode.centerLeftChild = this.parent.centerLeftChild.rightChild;
+            newNode.centerRightChild = this.parent.centerRightChild.leftChild;
+            newNode.rightChild = this.parent.centerRightChild.rightChild;
+            newNode.assignChildrenParent();
+            newNode.assignIsLeaf();
+            this.parent.value2 = this.parent.value3;
+            this.parent.value3 = 0;
+            this.parent.values = 2;
+            this.parent.centerChild = newNode;
+            this.parent.centerLeftChild = null;
+            this.parent.centerRightChild = null;
+            this.parent.assignChildrenParent();
+            return newNode;
+        }
+        public TwoFourTreeItem mergeCase3(int v1, int v2, int v3){
+            //Parent is fourNode, this is centerrightchild or rightchild, sibling is centerrightchild or rightchild
+            TwoFourTreeItem newNode = new TwoFourTreeItem(v1, v2, v3);
+            newNode.leftChild = this.parent.centerRightChild.leftChild;
+            newNode.centerLeftChild = this.parent.centerRightChild.rightChild;
+            newNode.centerRightChild = this.parent.rightChild.leftChild;
+            newNode.rightChild = this.parent.rightChild.rightChild;
+            newNode.assignChildrenParent();
+            newNode.assignIsLeaf();
+            this.parent.removeRightFace();
+            this.parent.rightChild = newNode;
+            this.parent.assignChildrenParent();
+            return newNode;
+        }
+        public TwoFourTreeItem mergeCase4(int v1, int v2, int v3){
+            //Parent is threeNode, this is leftchild or centerchild, sibling is leftchild or centerchild
+            TwoFourTreeItem newNode = new TwoFourTreeItem(v1, v2, v3);
+            newNode.leftChild = this.parent.leftChild.leftChild;
+            newNode.centerLeftChild = this.parent.leftChild.rightChild;
+            newNode.centerRightChild = this.parent.centerChild.leftChild;
+            newNode.rightChild = this.parent.centerChild.rightChild;
+            newNode.assignChildrenParent();
+            newNode.assignIsLeaf();
+            this.parent.removeLeftFace();
+            this.parent.leftChild = newNode;
+            this.parent.assignChildrenParent();
+            return newNode;
+        }
+        public TwoFourTreeItem mergeCase5(int v1, int v2, int v3){
+            //Parent is threeNode, this is centerchild or rightchild, sibling is centerchild or rightchild
+            TwoFourTreeItem newNode = new TwoFourTreeItem(v1, v2, v3);
+            newNode.leftChild = this.parent.centerChild.leftChild;
+            newNode.centerLeftChild = this.parent.centerChild.rightChild;
+            newNode.centerRightChild = this.parent.rightChild.leftChild;
+            newNode.rightChild = this.parent.rightChild.rightChild;
+            newNode.assignChildrenParent();
+            newNode.assignIsLeaf();
+            this.parent.removeRightFace();
+            this.parent.rightChild = newNode;
+            this.parent.assignChildrenParent();
+            return newNode;
+        }
         public TwoFourTreeItem mergeRoot(){
+            //This node is a root and its children are both twoNodes
             if(this.isRoot() && this.isTwoNode() && this.leftChild.isTwoNode() && this.rightChild.isTwoNode()){
                 TwoFourTreeItem newRoot = new TwoFourTreeItem(this.leftChild.value1, this.value1, this.rightChild.value1);
                 newRoot.leftChild = this.leftChild.leftChild;
                 newRoot.centerLeftChild = this.leftChild.rightChild;
                 newRoot.centerRightChild = this.rightChild.leftChild;
-                newRoot.rightChild = this.rightChild.leftChild;
-                newRoot.parent = this.parent;
+                newRoot.rightChild = this.rightChild.rightChild;
+                newRoot.parent = null;
                 newRoot.assignChildrenParent();
                 newRoot.assignIsLeaf();
                 return newRoot;
             }
             return this;
+        }       
+        public TwoFourTreeItem merge(TwoFourTreeItem sibling){
+            if(this.parent.isFourNode()){
+                //Case 1, parent isFourNode, Merging down value 1
+                if(this.parent.leftChild == this || (this.parent.centerLeftChild == this && this.parent.leftChild == sibling)){
+                    return mergeCase1(this.value1, this.parent.value1, sibling.value1);
+                }
+                //Case 2, parent isFourNode, Merging down value 2
+                else if((this.parent.centerLeftChild == this && this.parent.centerRightChild == sibling) || (this.parent.centerRightChild == this && this.parent.centerLeftChild == sibling)){
+                    return mergeCase2(this.value1, this.parent.value2, sibling.value1);
+                }
+                //Case 3, parent isFourNode, Merging down value 3
+                else if((this.parent.centerRightChild == this && this.parent.rightChild == sibling) || this.parent.rightChild == this){
+                    return mergeCase3(this.value1, this.parent.value3, sibling.value1);
+                }
+                else{
+                    return this;
+                }   
+            }
+            else if(this.parent.isThreeNode()){
+                if(this.parent.leftChild == this || (this.parent.centerChild == this && this.parent.leftChild == sibling)){
+                    return mergeCase4(this.value1, this.parent.value1, sibling.value1);
+                }
+                else if((this.parent.centerChild == this && this.parent.rightChild == sibling) || this.parent.rightChild == this){
+                    return mergeCase5(this.value1, this.parent.value2, sibling.value1);
+                }
+                else{
+                    return this;
+                }
+            }
+            else{
+                return this;
+            }
         }
 
-        public TwoFourTreeItem mingle(){
+        public TwoFourTreeItem mingle(int value){
             if(this.isRoot()){
                 return this.mergeRoot();
             }
             TwoFourTreeItem leftSibling = this.getLeftSibling();
             TwoFourTreeItem rightSibling = this.getRightSibling();
-            if(!rightSibling.isTwoNode()){
+
+            if(rightSibling != null && !rightSibling.isTwoNode()){
                 return this.rotateRight(rightSibling);
             }
-            else if(!leftSibling.isTwoNode()){
+            else if(leftSibling != null && !leftSibling.isTwoNode()){
                 return this.rotateLeft(leftSibling);
             }
             else{
-                return this.merge();
+                if(this.parent.leftChild == this){
+                    return this.merge(rightSibling);
+                }
+                else if(this.parent.centerLeftChild == this || this.parent.centerChild == this || this.parent.centerRightChild == this){
+                    if(this.value1 > value){
+                        return this.merge(leftSibling);
+                    }
+                    else{
+                        return this.merge(rightSibling);
+                    }
+                }
+                else if(this.parent.rightChild == this){
+                    return this.merge(leftSibling);
+                }
+                else{
+                    System.out.println("Yo bro your shit is cooked");
+                    return this;
+                }
             }
 
         }
@@ -487,7 +547,7 @@ public class TwoFourTree {
                 return true;
             }
             return false;
-        }
+        }    
 
         // Dont Touch[
         private void printIndents(int indent) {
@@ -560,53 +620,68 @@ public class TwoFourTree {
         return false;
     }
 
-    public TwoFourTreeItem getSuccessor(int val){
-        TwoFourTreeItem curr = this.rightChild;
-        while(!curr.isLeaf){
-            curr = curr.returnSubChild(val);
-        }
-        return curr;
-    }
-
-    public TwoFourTreeItem getPredecessor(int val){
-        TwoFourTreeItem curr = this.leftChild;
-        while(!curr.isLeaf){
-            curr = curr.returnSubChild(val);
-        }
-        return curr;
-    }
-
-
     public boolean deleteValue(int value) {
-        if(!hasValue(value)){
+        if(root == null){
             return false;
         }
-        TwoFourTreeItem toDelete = root;
-        while(!toDelete.hasValue(value)){
-            if(toDelete.isTwoNode()){
-                toDelete = toDelete.mingle();
-                if(toDelete.isRoot()){
-                    root = toDelete;
+        else if(root.isLeaf){
+            if(root.hasValue(value)){
+                if(root.isTwoNode()){
+                    root = null;
+                }
+                else if(root.isThreeNode() || root.isFourNode()){
+                    root.removeLeafValue(value);
                 }
             }
-            toDelete = curr.returnSubChild(value);
+            return true;
         }
-        if(!toDelete.removeLeafValue(value)){
-            TwoFourTreeItem successor = getSuccessor(value);
-            if(!successor.isTwoNode()){
-
-                toDelete = successor;
-            }
-            TwoFourTreeItem predecessor = getPredecessor(value);
-            else if(!predecessor.isTwoNode()){
-
-                toDelete = predecessor;
+        else{
+            TwoFourTreeItem curr = root;
+            while(curr != null && !curr.isLeaf && !curr.hasValue(value)){
+                if(curr.isTwoNode()){
+                    curr = curr.mingle(value);
+                    if(curr.isRoot()) root = curr;
+                }
+                curr = curr.returnSubChild(value);
             }
 
+            if(curr.isTwoNode()){
+                curr = curr.mingle(value);
+                if(curr.isRoot()) root = curr;
+            }
 
+            TwoFourTreeItem toDelete = curr;
+            if(curr.removeLeafValue(value)) return true;
 
+            while(curr != null && !curr.isLeaf && !curr.hasValue(value+1)){
+                if(curr.isTwoNode()){
+                    curr = curr.mingle(value+1);
+                    if(curr.isRoot()) root = curr;
+                }
+                if(curr.hasValue(value)) toDelete = curr;
+                curr = curr.returnSubChild(value+1);
+            }
+            curr = curr.mingle(value+1);
+
+            int tmp = 0;
+            if(toDelete.value1 == value){
+                tmp = toDelete.value1;
+                toDelete.value1 = curr.value1;
+                curr.value1 = tmp;
+            }
+            else if(toDelete.value2 == value){
+                tmp = toDelete.value2;
+                toDelete.value2 = curr.value1;
+                curr.value1 = tmp;
+            }
+            else{
+                tmp = toDelete.value3;
+                toDelete.value3 = curr.value1;
+                curr.value1 = tmp;
+            }
+            
+            return curr.removeLeafValue(value);
         }
-        return toDelete.removeLeafValue(value);
     }
 
     public TwoFourTreeItem getNode(int value){
